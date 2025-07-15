@@ -28,6 +28,7 @@ const init = async () => {
     await server.ext('onPreResponse', (request, h) => {
         const { response } = request;
         if (response instanceof ClientError) {
+            console.log('ClientError caught in onPreResponse:', response.message, 'Constructor:', response.constructor.name);
             return h.response({
                 status: 'fail',
                 message: response.message,
