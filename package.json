@@ -1,0 +1,33 @@
+{
+  "name": "hapi-album-song",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ./",
+    "start:prod": "NODE_ENV=production node ./src/server.js",
+    "serve": "nodemon ./src/server.js",
+    "migrate": "node-pg-migrate up",
+    "migrate:down": "node-pg-migrate down",
+    "migrate:create": "node-pg-migrate create"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@hapi/hapi": "^21.4.0",
+    "dotenv": "^17.2.0",
+    "joi": "^17.13.3",
+    "nanoid": "^5.1.5",
+    "node-pg-migrate": "^8.0.3",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "eslint": "^9.31.0",
+    "eslint-config-dicodingacademy": "^0.9.5",
+    "globals": "^16.3.0",
+    "nodemon": "^3.1.10"
+  }
+}
