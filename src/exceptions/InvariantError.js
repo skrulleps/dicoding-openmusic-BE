@@ -1,9 +1,10 @@
-class ClientError extends Error {
-    constructor(messages, statusCode = 400) {
+const ClientError = require("./ClientError");
+
+class InvariantError extends ClientError {
+    constructor(messages) {
         super(messages);
-        this.name = 'ClientError';
-        this.statusCode = statusCode;
+        this.name = 'InvariantError';
     }
 }
 
-module.exports = ClientError;
+module.exports = InvariantError;
