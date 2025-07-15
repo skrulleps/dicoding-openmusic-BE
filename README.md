@@ -95,7 +95,7 @@ The server will start and listen on the configured host and port.
 │   ├── 1752564620108_table-albums.js
 │   └── 1752564634309_table-songs.js
 ├── src/
-│   ├── api/                    # API route handlers (currently empty)
+│   ├── api/                    # API route handlers
 │   ├── exceptions/             # Custom error classes
 │   ├── services/               # Business logic and database services
 │   ├── utils/                  # Utility modules and models
