@@ -9,7 +9,7 @@ class AlbumServices {
     }
 
     async addAlbum({ name, year }) {
-        const id = nanoid(16);
+        const id = nanoid(8);
         const query = {
             text: 'INSERT INTO albums VALUES($1, $2, $3) RETURNING id',
             values: [id, name, year],
@@ -65,3 +65,5 @@ class AlbumServices {
         }
     };
 };
+
+module.exports = AlbumServices;
