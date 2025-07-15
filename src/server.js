@@ -17,10 +17,12 @@ const init = async () => {
         },
     });
 
+    const albumService = new AlbumService();
+
     await server.register({
         plugin: Albums,
         options: {
-            service: AlbumService,
+            service: albumService,
             validator: AlbumValidator,
         },
     });
