@@ -25,8 +25,8 @@ class AlbumsHandler {
     }
 
     async getAlbumByIdHandler(request, h) {
-        const { id } = request.params;
-        const album = await this._services.getAlbumById(id);
+        const { albumId } = request.params;
+        const album = await this._services.getAlbumById(albumId);
 
         if (!album) {
             throw new NotFoundError('Album tidak ditemukan');
@@ -41,11 +41,11 @@ class AlbumsHandler {
     }
 
     async putAlbumByIdHandler(request, h) {
-        const { id } = request.params;
+        const { albumId } = request.params;
         this._validator.validateAlbumPayload(request.payload);
         const { name, year } = request.payload;
 
-        await this._services.editAlbumById(id, { name, year });
+        await this._services.editAlbumById(albumId, { name, year });
 
         return {
             status: 'success',
@@ -54,9 +54,9 @@ class AlbumsHandler {
     }
 
     async deleteAlbumByIdHandler(request, h) {
-        const { id } = request.params;
+        const { albumId } = request.params;
 
-        await this._services.deleteAlbumById(id);
+        await this._services.deleteAlbumById(albumId);
 
         return {
             status: 'success',
@@ -64,3 +64,5 @@ class AlbumsHandler {
         };
     }
 }
+
+module.exports = AlbumsHandler;
