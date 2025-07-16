@@ -2,7 +2,7 @@ const { nanoid } = require("nanoid");
 const { Pool } = require("pg");
 const NotFoundError = require("../../exceptions/NotFoundError");
 const InvariantError = require("../../exceptions/InvariantError");
-const songModel = require("../../utils/SongModel");
+const { songModel } = require("../../utils/SongModel");
 
 class SongsHandler {
     constructor() {
@@ -10,7 +10,7 @@ class SongsHandler {
     }
 
     async addSong({ title, year, genre, performer, duration, albumId }) {
-        const id = nanoid(16);
+        const id = nanoid(8);
         const createdAt = new Date().toISOString();
         const updatedAt = createdAt;
         const query = {
@@ -33,15 +33,16 @@ class SongsHandler {
 
         if (title || performer) {
             query += ' WHERE';
+            const conditions = [];
             if (title) {
-                query += ' LOWER(title) LIKE LOWER($1)';
+                conditions.push(`LOWER(title) LIKE LOWER($${values.length + 1})`);
                 values.push(`%${title}%`);
             }
             if (performer) {
-                if (values.length > 0) query += ' AND';
-                query += ' LOWER(performer) LIKE LOWER($2)';
+                conditions.push(`LOWER(performer) LIKE LOWER($${values.length + 1})`);
                 values.push(`%${performer}%`);
             }
+            query += conditions.join(' AND ');
         }
 
         const result = await this._pool.query({ text: query, values });
