@@ -10,6 +10,12 @@ This project is a backend service built with Hapi.js for managing albums and son
 - Environment-based configuration for server host and port.
 - Input validation and error handling (using Joi and custom exceptions).
 - ID generation using nanoid.
+- Improved asynchronous handling in API handlers to ensure proper Promise resolution.
+- Fixed SQL query parameterization for filtering songs by title and performer.
+- Corrected import and usage of songModel function for proper data mapping.
+- Added songs array in album details response to include associated songs.
+- Updated song payload validation schema to make albumId optional.
+
 
 ## Technologies Used
 
