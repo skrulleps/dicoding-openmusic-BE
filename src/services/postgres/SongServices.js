@@ -10,7 +10,7 @@ class SongsHandler {
   }
 
   async addSong({ title, year, genre, performer, duration, albumId }) {
-    const id = nanoid(8);
+    const id = await nanoid(8);
     const createdAt = new Date().toISOString();
     const updatedAt = createdAt;
     const query = {
