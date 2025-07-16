@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint ./",
     "start:prod": "NODE_ENV=production node ./src/server.js",
-    "serve": "nodemon ./src/server.js",
+    "start": "nodemon ./src/server.js",
     "migrate": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create"
