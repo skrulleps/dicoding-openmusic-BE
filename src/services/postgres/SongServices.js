@@ -58,11 +58,17 @@ class SongsHandler {
 
         const result = await this._pool.query(query);
 
+        console.log('Raw DB result for getSongById:', result.rows);
+
         if (!result.rows.length) {
             throw new NotFoundError('Lagu tidak ditemukan');
         }
 
-        return result.rows.map(songModel)[0];
+        const song = result.rows.map(songModel)[0];
+
+        console.log('Mapped song object:', song);
+
+        return song;
     }
 
     async updateSongById(id, { title, year, genre, performer, duration, albumId }) {
