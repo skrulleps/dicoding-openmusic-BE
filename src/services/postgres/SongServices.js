@@ -30,20 +30,22 @@ class SongsHandler {
     async getSongs({ title, performer }) {
         let query = 'SELECT * FROM songs';
         const values = [];
+        const conditions = [];
 
-        if (title || performer) {
-            query += ' WHERE';
-            const conditions = [];
-            if (title) {
-                conditions.push(`LOWER(title) LIKE LOWER($${values.length + 1})`);
-                values.push(`%${title}%`);
-            }
-            if (performer) {
-                conditions.push(`LOWER(performer) LIKE LOWER($${values.length + 1})`);
-                values.push(`%${performer}%`);
-            }
-            query += conditions.join(' AND ');
+        if (title) {
+            conditions.push(`LOWER(title) LIKE LOWER($${values.length + 1})`);
+            values.push(`%${title}%`);
         }
+        if (performer) {
+            conditions.push(`LOWER(performer) LIKE LOWER($${values.length + 1})`);
+            values.push(`%${performer}%`);
+        }
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        console.log('getSongs query:', query);
+        console.log('getSongs values:', values);
 
         const result = await this._pool.query({ text: query, values });
 
