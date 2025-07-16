@@ -62,7 +62,7 @@ class SongsHandler {
         const updatedAt = new Date().toISOString();
         const { title, year, genre, performer, duration, albumId } = request.payload;
 
-        await this._service.editSongById(id, { title, year, genre, performer, duration, albumId, updatedAt });
+        await this._service.updateSongById(id, { title, year, genre, performer, duration, albumId, updatedAt });
 
         return {
             status: 'success',
