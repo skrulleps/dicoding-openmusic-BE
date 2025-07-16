@@ -8,11 +8,11 @@ class SongsHandler {
         autoBind(this);
     }
 
-    postSongHandler(request, h) {
+    async postSongHandler(request, h) {
         this._validator.validateSongPayload(request.payload);
         const { title, year, genre, performer, duration, albumId } = request.payload;
 
-        const songId = this._service.addSong({ title, year, genre, performer, duration, albumId });
+        const songId = await this._service.addSong({ title, year, genre, performer, duration, albumId });
 
         const response = h.response({
             status: 'success',
@@ -26,9 +26,9 @@ class SongsHandler {
     }
 
     // get all songs
-    getSongsHandler(request) {
+    async getSongsHandler(request) {
         const { title, performer } = request.query;
-        const songs = this._service.getSongs({ title, performer });
+        const songs = await this._service.getSongs({ title, performer });
 
         return {
             status: 'success',
@@ -43,9 +43,9 @@ class SongsHandler {
     }
 
     // get song by id
-    getSongByIdHandler(request) {
+    async getSongByIdHandler(request) {
         const { id } = request.params;
-        const song = this._service.getSongById(id);
+        const song = await this._service.getSongById(id);
 
         return {
             status: 'success',
@@ -56,13 +56,13 @@ class SongsHandler {
     }
 
     // put song by id
-    putSongByIdHandler(request) {
+    async putSongByIdHandler(request) {
         const { id } = request.params;
         this._validator.validateSongPayload(request.payload);
         const updatedAt = new Date().toISOString();
         const { title, year, genre, performer, duration, albumId } = request.payload;
 
-        this._service.editSongById(id, { title, year, genre, performer, duration, albumId, updatedAt });
+        await this._service.editSongById(id, { title, year, genre, performer, duration, albumId, updatedAt });
 
         return {
             status: 'success',
@@ -71,9 +71,9 @@ class SongsHandler {
     }
 
     // delete song by id
-    deleteSongByIdHandler(request) {
+    async deleteSongByIdHandler(request) {
         const { id } = request.params;
-        this._service.deleteSongById(id);
+        await this._service.deleteSongById(id);
 
         return {
             status: 'success',
