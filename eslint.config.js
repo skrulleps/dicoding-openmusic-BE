@@ -1,9 +1,9 @@
 const js = require('@eslint/js');
 const globals = require('globals');
-const {defineConfig} = require('eslint/config');
+const { defineConfig } = require('eslint/config');
 const daStyle = require('eslint-config-dicodingacademy');
 
-export default defineConfig([
+module.exports = defineConfig([
   daStyle,
   {
     files: ['**/*.{js,mjs,cjs}'],
