@@ -29,5 +29,8 @@
     "eslint-config-dicodingacademy": "^0.9.5",
     "globals": "^16.3.0",
     "nodemon": "^3.1.10"
+  },
+  "node-pg-migrate": {
+    "migrations-dir": "migrations"
   }
 }
