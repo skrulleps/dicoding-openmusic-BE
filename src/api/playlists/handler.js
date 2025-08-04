@@ -1,3 +1,5 @@
+const ClientError = require('../../exceptions/ClientError');
+
 class PlaylistHandler {
   constructor(playlistService, validator) {
     this._playlistService = playlistService;
@@ -12,21 +14,35 @@ class PlaylistHandler {
   }
 
   async postPlaylistHandler(request, h) {
-    this._validator.validatePostPlaylistPayload(request.payload);
-    const { name } = request.payload;
-    const { id: owner } = request.auth.credentials;
+    try {
+      this._validator.validatePlaylistPayload(request.payload);
+      const { name } = request.payload;
+      const { id: owner } = request.auth.credentials;
 
-    const playlistId = await this._playlistService.addPlaylist({ name, owner });
+      const playlistId = await this._playlistService.addPlaylist({ name, owner });
 
-    const response = h.response({
-      status: 'success',
-      message: 'Playlist berhasil ditambahkan',
-      data: {
-        playlistId,
-      },
-    });
-    response.code(201);
-    return response;
+      const response = h.response({
+        status: 'success',
+        message: 'Playlist berhasil ditambahkan',
+        data: {
+          playlistId,
+        },
+      });
+      response.code(201);
+      return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        return h.response({
+          status: 'fail',
+          message: error.message,
+        }).code(400);
+      }
+      console.error(error);
+      return h.response({
+        status: 'error',
+        message: 'Terjadi kesalahan pada server',
+      }).code(500);
+    }
   }
 
   async getPlaylistsHandler(request) {
