@@ -1,11 +1,24 @@
 require('dotenv').config();
 const Hapi = require('@hapi/hapi');
+// album
 const AlbumService = require('./services/postgres/AlbumServices');
-const SongService = require('./services/postgres/SongServices');
 const Albums = require('./api/albums/index');
+const AlbumValidator = require('./validator/albums/index');
+// songs
+const SongService = require('./services/postgres/SongServices');
 const Songs = require('./api/songs/index');
 const SongsValidator = require('./validator/songs/index');
-const AlbumValidator = require('./validator/albums/index');
+// users
+const UserServices = require('./services/postgres/UserServices');
+const Users = require('./api/users/index');
+const UserValidator = require('./validator/users/index');
+// authentications
+const AuthenticationsService = require('./services/postgres/AuthenticationServices');
+const Authentications = require('./api/authentications/index');
+const AuthenticationsValidator = require('./validator/authentications/index');
+const tokenManager = require('./tokenize/TokenManager');
+
+// error handling
 const ClientError = require('./exceptions/ClientError');
 
 
@@ -22,22 +35,42 @@ const init = async () => {
 
   const albumService = new AlbumService();
   const songService = new SongService();
+  const userService = new UserServices();
+  const authenticationsService = new AuthenticationsService();
 
-  await server.register({
-    plugin: Albums,
-    options: {
-      service: albumService,
-      validator: AlbumValidator,
+  await server.register([
+    {
+      plugin: Albums,
+      options: {
+        service: albumService,
+        validator: AlbumValidator,
+      },
     },
-  });
+    {
+      plugin: Songs,
+      options: {
+        service: songService,
+        validator: SongsValidator,
+      },
+    },
+    {
+      plugin: Users,
+      options: {
+        service: userService,
+        validator: UserValidator,
+      },
+    },
+    {
+      plugin: Authentications,
+      options: {
+        authenticationsService,
+        usersService: userService,
+        validator: AuthenticationsValidator,
+        tokenManager,
+      },
+    }
+  ]);
 
-  await server.register({
-    plugin: Songs,
-    options: {
-      service: songService,
-      validator: SongsValidator,
-    },
-  });
 
   await server.ext('onPreResponse', (request, h) => {
     const { response } = request;
@@ -62,7 +95,6 @@ const init = async () => {
 
     return h.continue;
   });
-
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);
 };
