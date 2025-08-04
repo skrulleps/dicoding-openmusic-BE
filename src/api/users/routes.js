@@ -1,4 +1,4 @@
-const route = (handler) => [
+const routes = (handler) => [
   {
     method: 'POST',
     path: '/users',
@@ -6,4 +6,4 @@ const route = (handler) => [
   }
 ];
 
-module.exports = route;
+module.exports = routes;
