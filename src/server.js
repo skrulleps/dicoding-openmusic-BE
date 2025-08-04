@@ -19,6 +19,11 @@ const Authentications = require('./api/authentications/index');
 const AuthenticationsValidator = require('./validator/authentications/index');
 const tokenManager = require('./tokenize/TokenManager');
 
+// playlists
+const PlaylistServices = require('./services/postgres/PlaylistServices');
+const Playlists = require('./api/playlists/index');
+const PlaylistValidator = require('./validator/playlists/index');
+
 // error handling
 const ClientError = require('./exceptions/ClientError');
 
@@ -28,6 +33,7 @@ const init = async () => {
   const songService = new SongService();
   const userService = new UserServices();
   const authenticationsService = new AuthenticationsService();
+  const playlistService = new PlaylistServices();
 
   const server = Hapi.server({
     port: process.env.PORT || 5000,
@@ -54,12 +60,17 @@ const init = async () => {
       sub: false,
       maxAgeSec: process.env.ACCESS_TOKEN_AGE,
     },
-    validate: (artifacts) => ({
-      isValid: true,
-      credentials: {
-        id: artifacts.decoded.payload.userId,
-      },
-    }),
+    validate: (artifacts) => {
+      if (!artifacts.decoded.payload.userId) {
+        return { isValid: false };
+      }
+      return {
+        isValid: true,
+        credentials: {
+          id: artifacts.decoded.payload.userId,
+        },
+      };
+    },
   });
 
   await server.register([
@@ -92,12 +103,27 @@ const init = async () => {
         validator: AuthenticationsValidator,
         tokenManager,
       },
+    },
+    {
+      plugin: Playlists,
+      options: {
+        playlistService,
+        validator: PlaylistValidator,
+      },
     }
   ]);
 
 
   await server.ext('onPreResponse', (request, h) => {
     const { response } = request;
+    // Handle JWT authentication errors
+    if (response.isBoom && response.output.statusCode === 401) {
+      return h.response({
+        status: 'fail',
+        message: 'Missing or invalid authentication',
+      }).code(401).takeover();
+    }
+
     if (response instanceof ClientError) {
       console.log('ClientError caught in onPreResponse:', response.message, 'Constructor:', response.constructor.name);
       return h.response({
