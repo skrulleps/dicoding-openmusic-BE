@@ -11,7 +11,7 @@ export const shorthands = undefined;
 export const up = (pgm) => {
   pgm.createTable('playlists', {
     id: {
-      type: 'VARCHAR(8)',
+      type: 'VARCHAR(50)',
       primaryKey: true,
     },
     name: {
@@ -19,7 +19,7 @@ export const up = (pgm) => {
       notNull: true,
     },
     owner: {
-      type: 'VARCHAR(8)',
+      type: 'VARCHAR(50)',
       notNull: true,
       references: 'users(id)',
       onDelete: 'CASCADE',

@@ -11,7 +11,7 @@
 exports.up = (pgm) => {
   pgm.createTable('songs', {
     id: {
-      type: 'VARCHAR(8)',
+      type: 'VARCHAR(50)',
       primaryKey: true,
     },
     title: {
@@ -36,7 +36,7 @@ exports.up = (pgm) => {
     },
     // eslint-disable-next-line camelcase
     album_id: {
-      type: 'VARCHAR(8)',
+      type: 'VARCHAR(50)',
       notNull: false,
       references: 'albums(id)',
       onDelete: 'CASCADE',

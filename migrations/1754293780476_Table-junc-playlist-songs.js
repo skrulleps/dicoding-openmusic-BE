@@ -11,19 +11,19 @@ export const shorthands = undefined;
 export const up = (pgm) => {
   pgm.createTable('playlist_songs', {
     id: {
-      type: 'VARCHAR(8)',
+      type: 'VARCHAR(50)',
       primaryKey: true,
     },
     // eslint-disable-next-line camelcase
     playlist_id: {
-      type: 'VARCHAR(8)',
+      type: 'VARCHAR(50)',
       notNull: true,
       references: 'playlists(id)',
       onDelete: 'CASCADE',
     },
     // eslint-disable-next-line camelcase
     song_id: {
-      type: 'VARCHAR(8)',
+      type: 'VARCHAR(50)',
       notNull: true,
       references: 'songs(id)',
       onDelete: 'CASCADE',
