@@ -27,7 +27,14 @@ class AlbumsHandler {
 
   async getAlbumByIdHandler(request) {
     const { albumId } = request.params;
-    const album = await this._services.getAlbumById(albumId);
+    const { title, performer } = request.query;
+
+    let searchQuery = null;
+    if (title || performer) {
+      searchQuery = title || performer;
+    }
+
+    const album = await this._services.getAlbumById(albumId, searchQuery);
 
     if (!album) {
       throw new NotFoundError('Album tidak ditemukan');
