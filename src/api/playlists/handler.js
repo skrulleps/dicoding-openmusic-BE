@@ -12,6 +12,8 @@ class PlaylistHandler {
     this.getPlaylistSongsHandler = this.getPlaylistSongsHandler.bind(this);
     this.deleteSongFromPlaylistHandler =
       this.deleteSongFromPlaylistHandler.bind(this);
+    this.getPlaylistActivitiesHandler =
+      this.getPlaylistActivitiesHandler.bind(this);
   }
 
   async postPlaylistHandler(request, h) {
@@ -97,6 +99,7 @@ class PlaylistHandler {
         })
         .code(201);
     } catch (error) {
+      console.error('Error in postSongToPlaylistHandler:', error);
       if (error instanceof ClientError) {
         return h
           .response({
@@ -105,7 +108,6 @@ class PlaylistHandler {
           })
           .code(error.statusCode || 400);
       }
-      console.error(error);
       return h
         .response({
           status: 'error',
@@ -210,20 +212,20 @@ class PlaylistHandler {
         .code(200);
     } catch (error) {
       if (error instanceof ClientError) {
-        return h
-          .response({
-            status: 'fail',
-            message: error.message,
-          })
-          .code(error.statusCode || 400);
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode || 400);
+        return response;
       }
       console.error(error);
-      return h
-        .response({
-          status: 'error',
-          message: 'Terjadi kesalahan pada server',
-        })
-        .code(500);
+      const response = h.response({
+        status: 'error',
+        message: 'Terjadi kesalahan pada server',
+      });
+      response.code(500);
+      return response;
     }
   }
 }
