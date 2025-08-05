@@ -24,9 +24,13 @@ const PlaylistServices = require('./services/postgres/PlaylistServices');
 const Playlists = require('./api/playlists/index');
 const PlaylistValidator = require('./validator/playlists/index');
 
+// collaborations
+const CollaborationServices = require('./services/postgres/CollaborationServices');
+const Collaborations = require('./api/collaborations/index');
+const CollaborationsValidator = require('./validator/collaborations/index');
+
 // error handling
 const ClientError = require('./exceptions/ClientError');
-
 
 const init = async () => {
   const albumService = new AlbumService();
@@ -34,6 +38,7 @@ const init = async () => {
   const userService = new UserServices();
   const authenticationsService = new AuthenticationsService();
   const playlistService = new PlaylistServices();
+  const collaborationService = new CollaborationServices();
 
   const server = Hapi.server({
     port: process.env.PORT || 5000,
@@ -48,8 +53,8 @@ const init = async () => {
   // register plugins
   await server.register([
     {
-      plugin: Jwt
-    }
+      plugin: Jwt,
+    },
   ]);
 
   server.auth.strategy('openmusic_jwt', 'jwt', {
@@ -110,26 +115,44 @@ const init = async () => {
         playlistService,
         validator: PlaylistValidator,
       },
-    }
+    },
+    {
+      plugin: Collaborations,
+      options: {
+        collaborationService,
+        playlistService,
+        validator: CollaborationsValidator,
+      },
+    },
   ]);
-
 
   await server.ext('onPreResponse', (request, h) => {
     const { response } = request;
     // Handle JWT authentication errors
     if (response.isBoom && response.output.statusCode === 401) {
-      return h.response({
-        status: 'fail',
-        message: 'Missing or invalid authentication',
-      }).code(401).takeover();
+      return h
+        .response({
+          status: 'fail',
+          message: 'Missing or invalid authentication',
+        })
+        .code(401)
+        .takeover();
     }
 
     if (response instanceof ClientError) {
-      console.log('ClientError caught in onPreResponse:', response.message, 'Constructor:', response.constructor.name);
-      return h.response({
-        status: 'fail',
-        message: response.message,
-      }).code(response.statusCode).takeover();
+      console.log(
+        'ClientError caught in onPreResponse:',
+        response.message,
+        'Constructor:',
+        response.constructor.name
+      );
+      return h
+        .response({
+          status: 'fail',
+          message: response.message,
+        })
+        .code(response.statusCode)
+        .takeover();
     }
 
     if (response instanceof Error) {
