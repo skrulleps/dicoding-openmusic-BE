@@ -57,6 +57,7 @@ class PlaylistServices {
 
     // Check if song already exists in playlist
     const existingSong = await this.checkSongInPlaylist(playlistId, songId);
+    console.log(existingSong);
     if (existingSong) {
       throw new InvariantError('Lagu sudah ada dalam playlist');
     }
@@ -126,7 +127,27 @@ class PlaylistServices {
     // Verify playlist exists and user owns it
     await this.verifyPlaylistOwner(playlistId, userId);
 
-    const query = {
+    // Get playlist details with owner username
+    const playlistQuery = {
+      text: `
+        SELECT p.id, p.name, u.username 
+        FROM playlists p
+        JOIN users u ON p.owner = u.id
+        WHERE p.id = $1
+      `,
+      values: [playlistId],
+    };
+
+    const playlistResult = await this._pool.query(playlistQuery);
+
+    if (!playlistResult.rows.length) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+
+    const playlist = playlistResult.rows[0];
+
+    // Get songs in the playlist
+    const songsQuery = {
       text: `
         SELECT s.id, s.title, s.performer 
         FROM playlist_songs ps
@@ -136,8 +157,14 @@ class PlaylistServices {
       values: [playlistId],
     };
 
-    const result = await this._pool.query(query);
-    return result.rows;
+    const songsResult = await this._pool.query(songsQuery);
+
+    return {
+      id: playlist.id,
+      name: playlist.name,
+      username: playlist.username,
+      songs: songsResult.rows,
+    };
   }
 
   async deleteSongFromPlaylist({ playlistId, songId, userId }) {
