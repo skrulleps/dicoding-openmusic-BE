@@ -27,7 +27,17 @@ class PlaylistServices {
 
   async getPlaylistsByOwner(owner) {
     const query = {
-      text: 'SELECT id, name FROM playlists WHERE owner = $1',
+      text: `
+        SELECT DISTINCT p.id, p.name, u.username
+        FROM playlists p
+        LEFT JOIN users u ON p.owner = u.id
+        WHERE p.owner = $1
+        OR p.id IN (
+          SELECT playlist_id 
+          FROM collaborations 
+          WHERE user_id = $1
+        )
+      `,
       values: [owner],
     };
 
@@ -49,8 +59,8 @@ class PlaylistServices {
   }
 
   async addSongToPlaylist({ playlistId, songId, userId }) {
-    // Verify playlist exists and user owns it
-    await this.verifyPlaylistOwner(playlistId, userId);
+    // Verify playlist exists and user has access (owner or collaborator)
+    await this.verifyPlaylistAccess(playlistId, userId);
 
     // Verify song exists
     await this.verifySongExists(songId);
@@ -96,6 +106,31 @@ class PlaylistServices {
     }
   }
 
+  async verifyPlaylistAccess(playlistId, userId) {
+    const query = {
+      text: `
+        SELECT p.id, p.owner
+        FROM playlists p
+        WHERE p.id = $1
+        AND (
+          p.owner = $2
+          OR p.id IN (
+            SELECT playlist_id 
+            FROM collaborations 
+            WHERE user_id = $2
+          )
+        )
+      `,
+      values: [playlistId, userId],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
+    }
+  }
+
   async verifySongExists(songId) {
     const query = {
       text: 'SELECT id FROM songs WHERE id = $1',
@@ -122,8 +157,8 @@ class PlaylistServices {
   }
 
   async getPlaylistSongs(playlistId, userId) {
-    // Verify playlist exists and user owns it
-    await this.verifyPlaylistOwner(playlistId, userId);
+    // Verify playlist exists and user has access (owner or collaborator)
+    await this.verifyPlaylistAccess(playlistId, userId);
 
     // Get playlist details with owner username
     const playlistQuery = {
@@ -166,8 +201,8 @@ class PlaylistServices {
   }
 
   async deleteSongFromPlaylist({ playlistId, songId, userId }) {
-    // Verify playlist exists and user owns it
-    await this.verifyPlaylistOwner(playlistId, userId);
+    // Verify playlist exists and user has access (owner or collaborator)
+    await this.verifyPlaylistAccess(playlistId, userId);
 
     // Verify song exists in playlist
     const songExists = await this.checkSongInPlaylist(playlistId, songId);
@@ -188,7 +223,6 @@ class PlaylistServices {
 
     return result.rows[0].id;
   }
-
 }
 
 module.exports = PlaylistServices;
