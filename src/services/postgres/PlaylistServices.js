@@ -115,7 +115,20 @@ class PlaylistServices {
   }
 
   async verifyPlaylistAccess(playlistId, userId) {
-    const query = {
+    // First check if playlist exists
+    const playlistQuery = {
+      text: 'SELECT id, owner FROM playlists WHERE id = $1',
+      values: [playlistId],
+    };
+
+    const playlistResult = await this._pool.query(playlistQuery);
+
+    if (!playlistResult.rows.length) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+
+    // Then check if user has access (owner or collaborator)
+    const accessQuery = {
       text: `
         SELECT p.id, p.owner
         FROM playlists p
@@ -132,9 +145,9 @@ class PlaylistServices {
       values: [playlistId, userId],
     };
 
-    const result = await this._pool.query(query);
+    const accessResult = await this._pool.query(accessQuery);
 
-    if (!result.rows.length) {
+    if (!accessResult.rows.length) {
       throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
     }
   }
