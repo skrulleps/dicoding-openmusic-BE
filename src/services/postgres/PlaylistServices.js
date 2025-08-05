@@ -165,13 +165,10 @@ class PlaylistServices {
   }
 
   async getPlaylistSongs(playlistId, userId) {
-    // Verify playlist exists and user has access (owner or collaborator)
-    await this.verifyPlaylistAccess(playlistId, userId);
-
-    // Get playlist details with owner username
+    // First check if playlist exists
     const playlistQuery = {
       text: `
-        SELECT p.id, p.name, u.username 
+        SELECT p.id, p.name, p.owner, u.username 
         FROM playlists p
         JOIN users u ON p.owner = u.id
         WHERE p.id = $1
@@ -184,6 +181,9 @@ class PlaylistServices {
     if (!playlistResult.rows.length) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
+
+    // Then verify user has access (owner or collaborator)
+    await this.verifyPlaylistAccess(playlistId, userId);
 
     const playlist = playlistResult.rows[0];
 
