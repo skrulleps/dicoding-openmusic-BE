@@ -85,6 +85,14 @@ class PlaylistServices {
       throw new InvariantError('Gagal menambahkan lagu ke playlist');
     }
 
+    // Record activity
+    await this.addPlaylistActivity({
+      playlistId,
+      songId,
+      userId,
+      action: 'add',
+    });
+
     return result.rows[0].id;
   }
 
@@ -222,6 +230,47 @@ class PlaylistServices {
     }
 
     return result.rows[0].id;
+  }
+
+  async addPlaylistActivity({ playlistId, songId, userId, action }) {
+    const id = `activity-${nanoid(16)}`;
+    const query = {
+      text: 'INSERT INTO playlist_activities VALUES($1, $2, $3, $4, $5) RETURNING id',
+      values: [id, playlistId, songId, userId, action],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new InvariantError('Gagal menambahkan aktivitas playlist');
+    }
+
+    return result.rows[0].id;
+  }
+
+  async getPlaylistActivities(playlistId, userId) {
+    // Verify playlist exists and user has access (owner or collaborator)
+    await this.verifyPlaylistAccess(playlistId, userId);
+
+    const query = {
+      text: `
+        SELECT 
+          pa.playlist_id as "playlistId",
+          u.username,
+          s.title,
+          pa.action,
+          pa.time
+        FROM playlist_activities pa
+        JOIN users u ON pa.user_id = u.id
+        JOIN songs s ON pa.song_id = s.id
+        WHERE pa.playlist_id = $1
+        ORDER BY pa.time ASC
+      `,
+      values: [playlistId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows;
   }
 }
 
