@@ -25,9 +25,9 @@ class AlbumServices {
     }
 
     return result.rows[0].id;
-  };
+  }
 
-  async getAlbumById(id) {
+  async getAlbumById(id, searchQuery = null) {
     const query = {
       text: 'SELECT * FROM albums WHERE id = $1',
       values: [id],
@@ -41,11 +41,19 @@ class AlbumServices {
 
     const album = result.rows.map(AlbumModel)[0];
 
-    // Fetch songs for the album
-    const songsQuery = {
-      text: 'SELECT * FROM songs WHERE album_id = $1',
-      values: [id],
-    };
+    // Fetch songs for the album with optional search
+    let songsQuery;
+    if (searchQuery) {
+      songsQuery = {
+        text: 'SELECT * FROM songs WHERE album_id = $1 AND (title ILIKE $2 OR performer ILIKE $2)',
+        values: [id, `%${searchQuery}%`],
+      };
+    } else {
+      songsQuery = {
+        text: 'SELECT * FROM songs WHERE album_id = $1',
+        values: [id],
+      };
+    }
 
     const songsResult = await this._pool.query(songsQuery);
 
@@ -58,7 +66,7 @@ class AlbumServices {
     album.songs = songs;
 
     return album;
-  };
+  }
 
   async editAlbumById(id, { name, year }) {
     const updatedAt = new Date().toISOString();
@@ -85,7 +93,7 @@ class AlbumServices {
     if (!result.rows.length) {
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan');
     }
-  };
-};
+  }
+}
 
 module.exports = AlbumServices;
