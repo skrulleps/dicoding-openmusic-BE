@@ -188,6 +188,44 @@ class PlaylistHandler {
         .code(500);
     }
   }
+
+  async getPlaylistActivitiesHandler(request, h) {
+    try {
+      const { id: playlistId } = request.params;
+      const { id: userId } = request.auth.credentials;
+
+      const activities = await this._playlistService.getPlaylistActivities(
+        playlistId,
+        userId
+      );
+
+      return h
+        .response({
+          status: 'success',
+          data: {
+            playlistId,
+            activities,
+          },
+        })
+        .code(200);
+    } catch (error) {
+      if (error instanceof ClientError) {
+        return h
+          .response({
+            status: 'fail',
+            message: error.message,
+          })
+          .code(error.statusCode || 400);
+      }
+      console.error(error);
+      return h
+        .response({
+          status: 'error',
+          message: 'Terjadi kesalahan pada server',
+        })
+        .code(500);
+    }
+  }
 }
 
 module.exports = PlaylistHandler;
