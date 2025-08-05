@@ -10,8 +10,7 @@ class PlaylistHandler {
     this.deletePlaylistHandler = this.deletePlaylistHandler.bind(this);
     this.postSongToPlaylistHandler = this.postSongToPlaylistHandler.bind(this);
     this.getPlaylistSongsHandler = this.getPlaylistSongsHandler.bind(this);
-    this.deleteSongFromPlaylistHandler =
-      this.deleteSongFromPlaylistHandler.bind(this);
+    this.deleteSongFromPlaylistHandler = this.deleteSongFromPlaylistHandler.bind(this);
   }
 
   async postPlaylistHandler(request, h) {
@@ -68,7 +67,7 @@ class PlaylistHandler {
   async deletePlaylistHandler(request) {
     const { id } = request.params;
     const { id: owner } = request.auth.credentials;
-
+    await this._playlistService.verifyPlaylistOwner(id, owner);
     await this._playlistService.deletePlaylistById(id, owner);
 
     return {
@@ -152,22 +151,41 @@ class PlaylistHandler {
     }
   }
 
-  async deleteSongFromPlaylistHandler(request) {
-    this._validator.validatePlaylistSongPayload(request.payload);
-    const { id: playlistId } = request.params;
-    const { id: userId } = request.auth.credentials;
-    const { songId } = request.payload;
+  async deleteSongFromPlaylistHandler(request, h) {
+    try {
+      this._validator.validatePlaylistSongPayload(request.payload);
+      const { id: playlistId } = request.params;
+      const { id: userId } = request.auth.credentials;
+      const { songId } = request.payload;
+      await this._playlistService.verifySongExists(songId);
+      await this._playlistService.verifyPlaylistOwner(playlistId, userId);
+      await this._playlistService.deleteSongFromPlaylist({
+        playlistId,
+        songId,
+        userId,
+      });
 
-    await this._playlistService.deleteSongFromPlaylist({
-      playlistId,
-      songId,
-      userId,
-    });
-
-    return {
-      status: 'success',
-      message: 'Lagu berhasil dihapus dari playlist',
-    };
+      return {
+        status: 'success',
+        message: 'Lagu berhasil dihapus dari playlist',
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        return h
+          .response({
+            status: 'fail',
+            message: error.message,
+          })
+          .code(error.statusCode || 400);
+      }
+      console.error(error);
+      return h
+        .response({
+          status: 'error',
+          message: 'Terjadi kesalahan pada server',
+        })
+        .code(500);
+    }
   }
 }
 

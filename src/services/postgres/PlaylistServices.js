@@ -94,8 +94,6 @@ class PlaylistServices {
     if (playlist.owner !== userId) {
       throw new AuthorizationError('Anda tidak berhak mengakses playlist ini');
     }
-
-    return true;
   }
 
   async verifySongExists(songId) {
@@ -190,6 +188,7 @@ class PlaylistServices {
 
     return result.rows[0].id;
   }
+
 }
 
 module.exports = PlaylistServices;
