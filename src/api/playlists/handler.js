@@ -10,7 +10,8 @@ class PlaylistHandler {
     this.deletePlaylistHandler = this.deletePlaylistHandler.bind(this);
     this.postSongToPlaylistHandler = this.postSongToPlaylistHandler.bind(this);
     this.getPlaylistSongsHandler = this.getPlaylistSongsHandler.bind(this);
-    this.deleteSongFromPlaylistHandler = this.deleteSongFromPlaylistHandler.bind(this);
+    this.deleteSongFromPlaylistHandler =
+      this.deleteSongFromPlaylistHandler.bind(this);
   }
 
   async postPlaylistHandler(request, h) {
@@ -158,7 +159,7 @@ class PlaylistHandler {
       const { id: userId } = request.auth.credentials;
       const { songId } = request.payload;
       await this._playlistService.verifySongExists(songId);
-      await this._playlistService.verifyPlaylistOwner(playlistId, userId);
+      await this._playlistService.verifyPlaylistAccess(playlistId, userId);
       await this._playlistService.deleteSongFromPlaylist({
         playlistId,
         songId,
