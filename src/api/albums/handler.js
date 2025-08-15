@@ -1,12 +1,14 @@
 const autoBind = require('auto-bind');
 const { NotFoundError } = require('../../exceptions/NotFoundError');
 const StorageService = require('../../services/storage/StorageService');
+const CacheService = require('../../services/redis/CacheService');
 
 class AlbumsHandler {
   constructor(services, validator) {
     this._services = services;
     this._validator = validator;
     this._storageService = new StorageService();
+    this._cacheService = new CacheService();
     autoBind(this);
   }
 
@@ -105,6 +107,10 @@ class AlbumsHandler {
 
     await this._services.addAlbumLike(albumId, userId);
 
+    // Clear cache for this album's likes
+    const cacheKey = `album-likes:${albumId}`;
+    await this._cacheService.delete(cacheKey);
+
     const response = h.response({
       status: 'success',
       message: 'Album berhasil disukai',
@@ -113,17 +119,42 @@ class AlbumsHandler {
     return response;
   }
 
-  async getAlbumLikesHandler(request) {
+  async getAlbumLikesHandler(request, h) {
     const { id: albumId } = request.params;
 
-    const likes = await this._services.getAlbumLikes(albumId);
+    // eslint-disable-next-line no-useless-catch
+    try {
+      // Try to get from cache first
+      const cacheKey = `album-likes:${albumId}`;
+      const cachedLikes = await this._cacheService.get(cacheKey);
 
-    return {
-      status: 'success',
-      data: {
-        likes,
-      },
-    };
+      if (cachedLikes !== null) {
+        // Return cached data with custom header
+        const response = h.response({
+          status: 'success',
+          data: {
+            likes: parseInt(cachedLikes, 10),
+          },
+        });
+        response.header('X-Data-Source', 'cache');
+        return response;
+      }
+
+      // If not in cache, get from database
+      const likes = await this._services.getAlbumLikes(albumId);
+
+      // Cache the result for 30 minutes (1800 seconds)
+      await this._cacheService.set(cacheKey, likes.toString(), 1800);
+
+      return {
+        status: 'success',
+        data: {
+          likes,
+        },
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async deleteAlbumLikeHandler(request) {
@@ -131,6 +162,10 @@ class AlbumsHandler {
     const { id: userId } = request.auth.credentials;
 
     await this._services.removeAlbumLike(albumId, userId);
+
+    // Clear cache for this album's likes
+    const cacheKey = `album-likes:${albumId}`;
+    await this._cacheService.delete(cacheKey);
 
     return {
       status: 'success',
