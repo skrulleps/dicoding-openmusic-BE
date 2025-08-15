@@ -49,6 +49,10 @@ A comprehensive RESTful API built with **Hapi.js** for managing music albums, so
 - **nodemon** (^3.1.10) - Development server with auto-reload
 - **eslint** (^9.31.0) - Code linting and formatting
 
+### RabbitMQ Cosnumer
+This producer service works in conjunction with the RabbitMQ producer available at:
+**https://github.com/skrulleps/hapi-albumMusic-queue-consumer**
+
 ## 📊 Database Schema
 
 ### Tables Overview
@@ -61,67 +65,6 @@ A comprehensive RESTful API built with **Hapi.js** for managing music albums, so
 6. **authentications** - JWT token storage
 7. **collaborations** - Playlist sharing and collaboration
 8. **playlist_activities** - Activity tracking for playlists
-
-### Detailed Schema
-
-#### Users Table
-
-```sql
-CREATE TABLE users (
-  id VARCHAR(50) PRIMARY KEY,
-  username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL,
-  fullname TEXT NOT NULL
-);
-```
-
-#### Albums Table
-
-```sql
-CREATE TABLE albums (
-  id VARCHAR(50) PRIMARY KEY,
-  name TEXT NOT NULL,
-  year INTEGER NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### Songs Table
-
-```sql
-CREATE TABLE songs (
-  id VARCHAR(50) PRIMARY KEY,
-  title TEXT NOT NULL,
-  year INTEGER NOT NULL,
-  performer TEXT NOT NULL,
-  genre TEXT NOT NULL,
-  duration INTEGER,
-  album_id VARCHAR(50) REFERENCES albums(id) ON DELETE SET NULL,
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### Playlists Table
-
-```sql
-CREATE TABLE playlists (
-  id VARCHAR(50) PRIMARY KEY,
-  name TEXT NOT NULL,
-  owner VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE
-);
-```
-
-#### Playlist Songs (Junction)
-
-```sql
-CREATE TABLE playlist_songs (
-  id VARCHAR(50) PRIMARY KEY,
-  playlist_id VARCHAR(50) NOT NULL REFERENCES playlists(id) ON DELETE CASCADE,
-  song_id VARCHAR(50) NOT NULL REFERENCES songs(id) ON DELETE CASCADE
-);
-```
 
 ## 🚀 API Endpoints
 
@@ -319,6 +262,10 @@ All playlist and collaboration endpoints require JWT authentication via the `Aut
 - **Collaborator**: Can add/remove songs from shared playlists
 
 ## 🧪 Testing
+
+### RabbitMQ Consumer
+This Producer service works in conjunction with the RabbitMQ producer available at:
+**https://github.com/skrulleps/hapi-albumMusic-queue-consumer**
 
 ### Manual Testing
 
