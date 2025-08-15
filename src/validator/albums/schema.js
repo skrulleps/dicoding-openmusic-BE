@@ -5,4 +5,16 @@ const AlbumPayloadSchema = Joi.object({
   year: Joi.number().integer().min(1900).max(2100).required(),
 });
 
-module.exports = { AlbumPayloadSchema };
+const CoverUploadSchema = Joi.object({
+  'content-type': Joi.string()
+    .valid('image/jpeg', 'image/png', 'image/jpg', 'image/webp')
+    .required(),
+  'content-length': Joi.number()
+    .max(512000)
+    .required(),
+});
+
+module.exports = {
+  AlbumPayloadSchema,
+  CoverUploadSchema,
+};
