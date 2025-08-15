@@ -70,7 +70,14 @@ class AlbumsHandler {
       throw new Error('Cover image is required');
     }
 
+    // Validate file type
     this._validator.validateCoverUpload(cover.hapi.headers);
+
+    // // Validate file size (500KB limit)
+    // const maxSize = 500 * 1024; // 500KB
+    // if (cover._data && cover._data.length > maxSize) {
+    //   throw new Error('File size exceeds 500KB limit');
+    // }
 
     const { id } = request.params;
 
