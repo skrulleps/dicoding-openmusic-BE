@@ -52,6 +52,10 @@ const init = async () => {
       cors: {
         origin: ['*'],
       },
+      payload: {
+        maxBytes: 512 * 1024, // 500KB default limit
+        timeout: false,
+      },
     },
   });
 
@@ -165,6 +169,18 @@ const init = async () => {
           message: response.message,
         })
         .code(response.statusCode)
+        .takeover();
+    }
+
+    if (response.isBoom && response.output.statusCode === 413) {
+      const PayloadTooLargeError = require('./exceptions/PayloadTooLargeError');
+      const error = new PayloadTooLargeError('Payload content length greater than maximum allowed: 500KB for album covers');
+      return h
+        .response({
+          status: 'fail',
+          message: error.message,
+        })
+        .code(error.statusCode)
         .takeover();
     }
 
