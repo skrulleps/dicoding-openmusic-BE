@@ -73,12 +73,6 @@ class AlbumsHandler {
     // Validate file type
     this._validator.validateCoverUpload(cover.hapi.headers);
 
-    // // Validate file size (500KB limit)
-    // const maxSize = 500 * 1024; // 500KB
-    // if (cover._data && cover._data.length > maxSize) {
-    //   throw new Error('File size exceeds 500KB limit');
-    // }
-
     const { id } = request.params;
 
     const filename = await this._storageService.writeFile(cover, cover.hapi);
@@ -102,6 +96,48 @@ class AlbumsHandler {
     return {
       status: 'success',
       message: 'Album berhasil dihapus',
+    };
+  }
+
+  async postAlbumLikeHandler(request, h) {
+    const { id: albumId } = request.params;
+    const { id: userId } = request.auth.credentials;
+
+    await this._services.addAlbumLike(albumId, userId);
+
+    const response = h.response({
+      status: 'success',
+      message: 'Album berhasil disukai',
+    });
+    response.code(201);
+    return response;
+  }
+
+  async getAlbumLikesHandler(request) {
+    const { id: albumId } = request.params;
+    const { id: userId } = request.auth.credentials;
+
+    const likes = await this._services.getAlbumLikes(albumId);
+    const isLiked = await this._services.isAlbumLikedByUser(albumId, userId);
+
+    return {
+      status: 'success',
+      data: {
+        likes,
+        isLiked,
+      },
+    };
+  }
+
+  async deleteAlbumLikeHandler(request) {
+    const { id: albumId } = request.params;
+    const { id: userId } = request.auth.credentials;
+
+    await this._services.removeAlbumLike(albumId, userId);
+
+    return {
+      status: 'success',
+      message: 'Like berhasil dihapus',
     };
   }
 }
