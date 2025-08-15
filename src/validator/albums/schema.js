@@ -12,7 +12,7 @@ const CoverUploadSchema = Joi.object({
   'content-length': Joi.number()
     .max(512000)
     .required(),
-});
+}).unknown(true); // Allow other headers
 
 module.exports = {
   AlbumPayloadSchema,
