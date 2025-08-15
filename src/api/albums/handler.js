@@ -1,10 +1,12 @@
 const autoBind = require('auto-bind');
 const { NotFoundError } = require('../../exceptions/NotFoundError');
+const StorageService = require('../../services/storage/StorageService');
 
 class AlbumsHandler {
   constructor(services, validator) {
     this._services = services;
     this._validator = validator;
+    this._storageService = new StorageService();
     autoBind(this);
   }
 
@@ -59,6 +61,30 @@ class AlbumsHandler {
       status: 'success',
       message: 'Album berhasil diperbarui',
     };
+  }
+
+  async postAlbumCoverHandler(request, h) {
+    const { cover } = request.payload;
+
+    if (!cover) {
+      throw new Error('Cover image is required');
+    }
+
+    this._validator.validateCoverUpload(cover.hapi.headers);
+
+    const { id } = request.params;
+
+    const filename = await this._storageService.writeFile(cover, cover.hapi);
+    const coverUrl = `http://${process.env.HOST}:${process.env.PORT}/uploads/images/${filename}`;
+
+    await this._services.updateAlbumCover(id, coverUrl);
+
+    const response = h.response({
+      status: 'success',
+      message: 'Sampul berhasil diunggah',
+    });
+    response.code(201);
+    return response;
   }
 
   async deleteAlbumByIdHandler(request) {
