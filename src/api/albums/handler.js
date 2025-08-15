@@ -115,16 +115,13 @@ class AlbumsHandler {
 
   async getAlbumLikesHandler(request) {
     const { id: albumId } = request.params;
-    const { id: userId } = request.auth.credentials;
 
     const likes = await this._services.getAlbumLikes(albumId);
-    const isLiked = await this._services.isAlbumLikedByUser(albumId, userId);
 
     return {
       status: 'success',
       data: {
         likes,
-        isLiked,
       },
     };
   }
